@@ -143,15 +143,22 @@ export function NotificationSettings({ className = '' }: NotificationSettingsPro
       )}
       
       {permission === 'granted' && notificationsEnabled && (
-        <div className="mt-3">
+        <div className="mt-3 space-y-2">
           <button
             onClick={async () => {
               try {
+                console.log('🔍 Testing notification system...');
+                console.log('🔍 Document has focus:', document.hasFocus());
+                console.log('🔍 Notification permission:', Notification.permission);
+                
                 const subscriptionData = localStorage.getItem('push_subscription');
                 if (!subscriptionData) {
                   console.error('❌ No push subscription found');
+                  alert('No push subscription found. Please enable notifications first.');
                   return;
                 }
+                
+                console.log('📋 Found subscription data:', subscriptionData);
                 
                 const response = await fetch('/api/stream/send-push-notification', {
                   method: 'POST',
@@ -165,19 +172,49 @@ export function NotificationSettings({ className = '' }: NotificationSettingsPro
                   }),
                 });
                 
+                console.log('📥 Response status:', response.status);
+                
                 if (response.ok) {
-                  console.log('✅ Test notification sent successfully');
+                  const result = await response.json();
+                  console.log('✅ Test notification sent successfully:', result);
+                  alert('✅ Test notification sent! Check if you see a popup notification.');
                 } else {
                   const error = await response.json();
                   console.error('❌ Failed to send test notification:', error);
+                  alert(`❌ Failed to send test notification: ${error.message || response.statusText}`);
                 }
               } catch (error) {
                 console.error('❌ Error sending test notification:', error);
+                alert('❌ Error sending test notification. Check console for details.');
               }
             }}
             className="w-full px-3 py-2 text-sm bg-gray-600 text-white rounded-md hover:bg-gray-700"
           >
-            Test Bildirimi Gönder
+            Test Bildirimi Gönder (Web Push)
+          </button>
+          
+          <button
+            onClick={() => {
+              try {
+                console.log('🔍 Testing simple browser notification...');
+                if (Notification.permission === 'granted') {
+                  new Notification('Simple Test', {
+                    body: 'This is a simple browser notification test',
+                    icon: '/favicon.ico'
+                  });
+                  console.log('✅ Simple notification created');
+                } else {
+                  console.log('❌ Notification permission not granted');
+                  alert('Notification permission not granted');
+                }
+              } catch (error) {
+                console.error('❌ Error creating simple notification:', error);
+                alert('Error creating simple notification');
+              }
+            }}
+            className="w-full px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Test Simple Browser Notification
           </button>
         </div>
       )}
