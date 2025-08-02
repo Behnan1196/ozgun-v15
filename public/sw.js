@@ -22,7 +22,7 @@ self.addEventListener('push', (event) => {
     icon: '/favicon.ico',
     badge: '/favicon.ico',
     tag: 'chat-message',
-    requireInteraction: false,
+    requireInteraction: true, // Force notification to stay visible
     silent: false,
     vibrate: [200, 100, 200],
     data: {}
@@ -57,11 +57,13 @@ self.addEventListener('push', (event) => {
   
   console.log('🔔 Final notification data:', notificationData);
   
-  // Show the notification
+  // Show the notification - force it to display even when tab is focused
   event.waitUntil(
     self.registration.showNotification(notificationData.title, notificationData)
       .then(() => {
         console.log('✅ Notification shown successfully');
+        // Also log to help with debugging
+        console.log('🔍 Check browser notification area (top-right corner)');
       })
       .catch((error) => {
         console.error('❌ Error showing notification:', error);

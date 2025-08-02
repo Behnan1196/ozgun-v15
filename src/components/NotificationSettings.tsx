@@ -216,6 +216,32 @@ export function NotificationSettings({ className = '' }: NotificationSettingsPro
           >
             Test Simple Browser Notification
           </button>
+          
+          <button
+            onClick={() => {
+              try {
+                console.log('🔍 Testing direct browser notification with requireInteraction...');
+                if (Notification.permission === 'granted') {
+                  new Notification('Direct Test (Forced)', {
+                    body: 'This notification should show even when tab is focused',
+                    icon: '/favicon.ico',
+                    requireInteraction: true, // Force it to stay visible
+                    tag: 'test-notification'
+                  });
+                  console.log('✅ Direct notification created with requireInteraction');
+                } else {
+                  console.log('❌ Notification permission not granted');
+                  alert('Notification permission not granted');
+                }
+              } catch (error) {
+                console.error('❌ Error creating direct notification:', error);
+                alert('Error creating direct notification');
+              }
+            }}
+            className="w-full px-3 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700"
+          >
+            Test Direct Notification (Forced)
+          </button>
         </div>
       )}
     </div>
