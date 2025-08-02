@@ -225,7 +225,7 @@ export function NotificationSettings({ className = '' }: NotificationSettingsPro
                   new Notification('Direct Test (Forced)', {
                     body: 'This notification should show even when tab is focused',
                     icon: '/favicon.ico',
-                    requireInteraction: true, // Force it to stay visible
+                    requireInteraction: false, // Changed to false for better compatibility
                     tag: 'test-notification'
                   });
                   console.log('✅ Direct notification created with requireInteraction');
@@ -240,8 +240,17 @@ export function NotificationSettings({ className = '' }: NotificationSettingsPro
             }}
             className="w-full px-3 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700"
           >
-            Test Direct Notification (Forced)
+            Test Direct Notification (Fixed)
           </button>
+          
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <p className="text-xs text-blue-700">
+              <strong>Where to look for notifications:</strong><br/>
+              • Web Push: Top-right corner of browser window<br/>
+              • Browser Notifications: Bottom-right corner of screen<br/>
+              • Try switching to another tab and clicking the web push button
+            </p>
+          </div>
         </div>
       )}
     </div>
