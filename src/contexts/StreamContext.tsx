@@ -21,6 +21,14 @@ import {
   createVideoCall,
   StreamUtils 
 } from '@/lib/stream'
+import {
+  registerDeviceForNotifications,
+  removeDeviceFromNotifications,
+  setupNotificationListeners,
+  setupServiceWorker,
+  isNotificationsSupported,
+  requestNotificationPermission,
+} from '@/lib/notifications'
 
 interface StreamContextType {
   // Chat
@@ -45,6 +53,7 @@ interface StreamContextType {
   // Status
   isStreamReady: boolean
   isDemoMode: boolean
+  notificationsEnabled: boolean
   
   // Call notifications
   pendingCallInvite: {
@@ -109,6 +118,10 @@ export function StreamProvider({ children }: StreamProviderProps) {
     callerName: string
     partnerId: string
   } | null>(null)
+  
+  // Notification state
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false)
+  const [notificationCleanup, setNotificationCleanup] = useState<(() => void) | null>(null)
   
   // General state
   const [isStreamReady, setIsStreamReady] = useState(false)
@@ -332,6 +345,18 @@ export function StreamProvider({ children }: StreamProviderProps) {
           setVideoClient(video)
           console.log('📹 Stream Video client initialized successfully')
           
+          // Setup notifications if supported
+          console.log('🔍 Checking if notifications are supported...')
+          const notificationsSupported = isNotificationsSupported()
+          console.log('🔍 Notifications supported:', notificationsSupported)
+          
+          if (notificationsSupported) {
+            console.log('🔔 Starting notification setup...')
+            await setupNotifications(chat, currentUser.id)
+          } else {
+            console.log('⚠️ Notifications not supported, skipping setup')
+          }
+          
           setIsStreamReady(true)
           hasInitialized.current = true
           console.log('✅ Stream.io clients ready - isStreamReady set to TRUE')
@@ -476,6 +501,11 @@ export function StreamProvider({ children }: StreamProviderProps) {
       // Clean up Stream clients
       const cleanup = async () => {
         try {
+          // Cleanup notifications
+          if (notificationCleanup) {
+            notificationCleanup()
+          }
+          
           if (chatClient) {
             console.log('🧹 Disconnecting chat client...')
             await chatClient.disconnectUser()
@@ -734,6 +764,59 @@ export function StreamProvider({ children }: StreamProviderProps) {
     }
   }
 
+  // Setup notifications
+  const setupNotifications = async (chatClientInstance: StreamChat, userId: string) => {
+    try {
+      console.log('🔔 [NOTIFICATIONS] Setting up notifications...')
+      console.log('🔍 Chat client:', !!chatClientInstance)
+      console.log('🔍 User ID:', userId)
+      
+      // Check if notifications are supported
+      const supported = isNotificationsSupported()
+      console.log('🔍 Notifications supported:', supported)
+      
+      if (!supported) {
+        console.log('⚠️ [NOTIFICATIONS] Notifications not supported in this browser')
+        return
+      }
+      
+      // Setup service worker
+      console.log('🔧 Setting up service worker...')
+      await setupServiceWorker()
+      console.log('✅ Service worker setup complete')
+      
+      // Request permission
+      console.log('🔧 Requesting notification permission...')
+      const permissionGranted = await requestNotificationPermission()
+      console.log('🔍 Permission granted:', permissionGranted)
+      
+      if (!permissionGranted) {
+        console.log('⚠️ [NOTIFICATIONS] Permission denied')
+        return
+      }
+      
+      // Register device for notifications
+      console.log('🔧 Registering device for notifications...')
+      await registerDeviceForNotifications(chatClientInstance, userId)
+      console.log('✅ Device registration complete')
+      
+      // Setup notification listeners
+      console.log('🔧 Setting up notification listeners...')
+      const cleanup = setupNotificationListeners(chatClientInstance, (channelId, messageId) => {
+        console.log('📨 [NOTIFICATIONS] New message received:', { channelId, messageId })
+        // You can add navigation logic here to open the chat
+      })
+      
+      setNotificationCleanup(cleanup)
+      setNotificationsEnabled(true)
+      
+      console.log('✅ [NOTIFICATIONS] Notifications setup complete')
+    } catch (error) {
+      console.error('❌ [NOTIFICATIONS] Failed to setup notifications:', error)
+      console.error('❌ Error details:', error)
+    }
+  }
+
   const value: StreamContextType = {
     // Chat
     chatClient,
@@ -757,6 +840,7 @@ export function StreamProvider({ children }: StreamProviderProps) {
     // Status
     isStreamReady,
     isDemoMode,
+    notificationsEnabled,
     
     // Call notifications
     pendingCallInvite,

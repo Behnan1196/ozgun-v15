@@ -36,6 +36,7 @@ import {
 } from '@mui/icons-material'
 import AdminLayout from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
+import NotificationSettings from '@/components/NotificationSettings'
 
 function TabPanel({ children, value, index }: { children?: React.ReactNode; value: number; index: number }) {
   return (
@@ -377,6 +378,14 @@ export default function SettingsPage() {
                       }
                       label="SMS Bildirimleri"
                     />
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12}>
+                <Card>
+                  <CardHeader title="Chat Bildirimleri" />
+                  <CardContent>
+                    <NotificationSettings />
                   </CardContent>
                 </Card>
               </Grid>

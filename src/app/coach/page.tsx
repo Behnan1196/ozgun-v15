@@ -61,6 +61,7 @@ import { StableStreamProvider } from '@/components/StableStreamProvider'
 import { MockExam } from '@/types/database'
 
 import { VideoCallInvite } from '@/components/VideoCallInvite'
+import NotificationSettings from '@/components/NotificationSettings'
 
 // Interfaces
 interface Student {
@@ -4253,6 +4254,17 @@ export default function CoachPage() {
 
                           </div>
                         </div>
+                      </div>
+
+                      {/* Chat Notifications */}
+                      <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <h4 className="font-medium text-gray-800 mb-4 flex items-center">
+                          <MessageCircle className="h-4 w-4 mr-2 text-blue-600" />
+                          Chat Bildirimleri
+                        </h4>
+                        <StableStreamProvider>
+                          <NotificationSettings />
+                        </StableStreamProvider>
                       </div>
 
                       <div className="flex justify-end mt-6">
