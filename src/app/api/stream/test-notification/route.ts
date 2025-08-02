@@ -17,18 +17,12 @@ export async function POST(request: NextRequest) {
     // Get current app settings to verify configuration
     const appSettings = await serverClient.getAppSettings();
     
-    console.log('📋 Current notification settings:', {
-      push_notification_template: !!appSettings.push_notification_template,
-      push_notification_rules: !!appSettings.push_notification_rules,
-    });
+    console.log('📋 Current notification settings:', appSettings);
     
     return NextResponse.json({
       success: true,
       message: 'Notification system is configured',
       settings: {
-        has_template: !!appSettings.push_notification_template,
-        has_rules: !!appSettings.push_notification_rules,
-        template_version: appSettings.push_notification_template?.version,
       },
     });
     

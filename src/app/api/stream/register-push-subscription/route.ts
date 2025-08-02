@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { StreamChat } from 'stream-chat';
 import webpush from 'web-push';
-import { storePushSubscription } from '../webhook/route';
+import { storePushSubscription } from '@/lib/push-subscriptions';
 
 // Stream.io configuration
 const STREAM_CONFIG = {

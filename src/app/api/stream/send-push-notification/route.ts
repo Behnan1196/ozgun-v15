@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import webpush from 'web-push';
-import { getPushSubscription } from '../webhook/route';
+import { getPushSubscription } from '@/lib/push-subscriptions';
 
 // Web push configuration
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;

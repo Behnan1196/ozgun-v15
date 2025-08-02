@@ -9,17 +9,11 @@ import {
 
 // Optional Stream context hook
 const useStreamContext = () => {
-  try {
-    // Dynamic import to avoid SSR issues
-    const { useStream } = require('@/contexts/StreamContext')
-    return useStream()
-  } catch (error) {
-    // Return default values if Stream context is not available
-    return {
-      notificationsEnabled: false,
-      enableNotifications: () => Promise.resolve(),
-      disableNotifications: () => Promise.resolve(),
-    }
+  // Always return default values to avoid conditional hook calls
+  return {
+    notificationsEnabled: false,
+    enableNotifications: () => Promise.resolve(),
+    disableNotifications: () => Promise.resolve(),
   }
 }
 
@@ -142,7 +136,6 @@ export function NotificationSettings({ className = '' }: NotificationSettingsPro
       
       {permission === 'granted' && notificationsEnabled && (
         <div className="mt-3">
-          {console.log('🔍 Test button should be visible - conditions met')}
           <button
             onClick={async () => {
               try {

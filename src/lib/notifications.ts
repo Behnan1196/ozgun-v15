@@ -1,5 +1,25 @@
 import { StreamChat } from 'stream-chat';
 
+// Service Worker global declaration for TypeScript
+// Allows use of 'clients' in notification click handler
+// You can move this to a types/ directory if you want to reuse it
+
+declare const clients: {
+  matchAll: (options?: any) => Promise<any[]>;
+  openWindow?: (url: string) => Promise<any>;
+}
+
+// Minimal PushEvent type for TypeScript
+// Only includes the 'data' property used in service worker push events
+// You can move this to a types/ directory if you want to reuse it
+
+type PushEvent = Event & { data?: { json: () => any } }
+
+// Minimal NotificationEvent type for TypeScript
+// Only includes the 'notification' and 'waitUntil' properties used in service worker notification events
+// You can move this to a types/ directory if you want to reuse it
+type NotificationEvent = Event & { notification: { close: () => void }, waitUntil: (promise: Promise<any>) => void }
+
 // Notification configuration
 export const NOTIFICATION_CONFIG = {
   // Web push notification settings
@@ -157,7 +177,6 @@ const showLocalNotification = (
       tag: NOTIFICATION_CONFIG.templates.message.tag,
       requireInteraction: false,
       silent: false,
-      vibrate: NOTIFICATION_CONFIG.templates.message.vibrate,
       data,
     });
     
@@ -313,8 +332,10 @@ export const setupServiceWorker = async (): Promise<void> => {
       registration.addEventListener('push', (event) => {
         console.log('🔔 Push event received:', event);
         
-        if (event.data) {
-          const data = event.data.json();
+        // TypeScript: event is Event, but only PushEvent has .data
+        const pushEvent = event as PushEvent;
+        if (pushEvent.data) {
+          const data = pushEvent.data.json();
           handlePushNotification(data);
         }
       });
@@ -323,10 +344,11 @@ export const setupServiceWorker = async (): Promise<void> => {
       registration.addEventListener('notificationclick', (event) => {
         console.log('🔔 Notification clicked:', event);
         
-        event.notification.close();
+        const notificationEvent = event as NotificationEvent;
+        notificationEvent.notification.close();
         
         // Focus the window
-        event.waitUntil(
+        notificationEvent.waitUntil(
           clients.matchAll({ type: 'window' }).then((clientList) => {
             for (const client of clientList) {
               if (client.url === '/' && 'focus' in client) {

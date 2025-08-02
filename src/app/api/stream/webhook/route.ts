@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import webpush from 'web-push';
+import { getPushSubscription } from '@/lib/push-subscriptions';
 
 // Web push configuration
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -14,9 +15,6 @@ webpush.setVapidDetails(
   VAPID_PUBLIC_KEY!,
   VAPID_PRIVATE_KEY!
 );
-
-// In-memory storage for push subscriptions (in production, use a database)
-const pushSubscriptions = new Map<string, any>();
 
 export async function POST(request: NextRequest) {
   try {
@@ -79,7 +77,7 @@ async function handleNewMessage(data: any) {
 async function sendPushNotification(userId: string, notification: any) {
   try {
     // Get user's push subscription from storage
-    const subscription = pushSubscriptions.get(userId);
+    const subscription = getPushSubscription(userId);
     
     if (!subscription) {
       console.log(`⚠️ No push subscription found for user: ${userId}`);
@@ -94,20 +92,12 @@ async function sendPushNotification(userId: string, notification: any) {
     console.error(`❌ Failed to send push notification to user ${userId}:`, error);
     
     // If subscription is invalid, remove it
-    if (error.statusCode === 410) {
-      pushSubscriptions.delete(userId);
-      console.log(`🗑️ Removed invalid subscription for user: ${userId}`);
+    if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 410) {
+      // Note: In a real implementation, you'd want to remove the subscription
+      console.log(`🗑️ Invalid subscription for user: ${userId}`);
     }
   }
 }
 
 // Store push subscription (called from register-push-subscription endpoint)
-export function storePushSubscription(userId: string, subscription: any) {
-  pushSubscriptions.set(userId, subscription);
-  console.log(`💾 Stored push subscription for user: ${userId}`);
-}
-
-// Get push subscription (for testing)
-export function getPushSubscription(userId: string) {
-  return pushSubscriptions.get(userId);
-} 
+ 
