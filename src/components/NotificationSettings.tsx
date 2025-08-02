@@ -7,13 +7,21 @@ import {
   requestNotificationPermission,
 } from '@/lib/notifications'
 
+// Import the real Stream context
+import { useStream } from '@/contexts/StreamContext'
+
 // Optional Stream context hook
 const useStreamContext = () => {
-  // Always return default values to avoid conditional hook calls
-  return {
-    notificationsEnabled: false,
-    enableNotifications: () => Promise.resolve(),
-    disableNotifications: () => Promise.resolve(),
+  try {
+    // Try to get the real Stream context
+    return useStream()
+  } catch {
+    // Return default values if Stream context is not available
+    return {
+      notificationsEnabled: false,
+      enableNotifications: () => Promise.resolve(),
+      disableNotifications: () => Promise.resolve(),
+    }
   }
 }
 
